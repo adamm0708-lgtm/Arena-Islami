@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ARENA JUARA MUSLIM - Islamic Educational Battle Game</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background: radial-gradient(circle at center, #065f46 0%, #022c22 100%);
+            overflow-x: hidden;
+        }
+
+        /* 3D Button Effects */
+        .btn-3d {
+            transition: all 0.1s ease;
+            transform: translateY(0);
+        }
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: none !important;
+        }
+
+        /* Custom Text Stroke */
+        .text-stroke {
+            -webkit-text-stroke: 1.5px #022c22;
+        }
+        .text-stroke-gold {
+            -webkit-text-stroke: 1.5px #78350f;
+        }
+
+        /* Responsive Grid & Touch Guard */
+        .touch-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Animations */
+        @keyframes pulse-slow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 3s infinite ease-in-out;
+        }
+
+        .screen-section {
+            display: none;
+        }
+        .screen-section.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="h-full text-white flex flex-col justify-between select-none">
+
+    <!-- MAIN CONTAINER -->
+    <div id="app-container" class="relative w-full h-full min-h-screen flex flex-col justify-between items-center p-2 sm:p-4">
+        
+        <!-- HEADER TOP BAR -->
+        <header class="w-full max-w-5xl flex justify-between items-center bg-emerald-950/80 border-2 border-emerald-600/60 rounded-2xl p-2 px-4 shadow-lg backdrop-blur-md z-20">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="goToMenu()">
+                <div class="w-9 h-9 bg-amber-400 rounded-xl flex items-center justify-center text-emerald-950 font-black shadow border border-amber-200">
+                    <i data-lucide="shield" class="w-6 h-6 fill-amber-400 text-emerald-950"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-black text-amber-300 leading-none tracking-wide">ARENA JUARA MUSLIM</h1>
+                    <span class="text-[10px] text-emerald-300 font-semibold tracking-wider uppercase hidden sm:inline-block">Belajar Ilmu, Adu Strategi, Raih Prestasi!</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleAudio()" id="audio-toggle-btn" class="p-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-500 rounded-xl text-amber-300 shadow">
+                    <i data-lucide="volume-2" class="w-5 h-5"></i>
+                </button>
+                <button onclick="toggleFullScreen()" id="fullscreen-btn" class="p-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-500 rounded-xl text-amber-300 shadow" title="Layar Penuh">
+                    <i data-lucide="maximize" class="w-5 h-5"></i>
+                </button>
+                <button onclick="openModal('guide-modal')" class="p-2 bg-emerald-800 hover:bg-emerald-700 border border-emerald-500 rounded-xl text-amber-300 shadow">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN MENU SCREEN -->
+        <section id="main-menu" class="screen-section active w-full max-w-4xl flex flex-col items-center justify-center my-auto py-6 text-center z-10 space-y-6">
+            <div class="relative animate-pulse-slow">
+                <div class="w-24 h-24 sm:w-32 sm:h-32 bg-amber-400 rounded-3xl mx-auto flex items-center justify-center shadow-2xl border-4 border-amber-200 transform rotate-3">
+                    <i data-lucide="trophy" class="w-16 h-16 sm:w-20 sm:h-20 text-emerald-950"></i>
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-black text-amber-300 mt-4 tracking-tight text-stroke-gold">ARENA JUARA MUSLIM</h1>
+                <p class="text-emerald-200 font-bold text-sm sm:text-base mt-1">Game Duel Edukasi Islami Multiplayer Dua Kelompok</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-md px-4">
+                <button onclick="openTournamentSetup()" class="btn-3d py-4 px-6 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 border-b-4 border-amber-700 text-emerald-950 text-lg font-black rounded-2xl flex items-center justify-center space-x-3 shadow-xl col-span-1 sm:col-span-2">
+                    <i data-lucide="trophy" class="w-7 h-7 text-emerald-950"></i>
+                    <span>MODE TURNAMEN (5 BABAK)</span>
+                </button>
+                <button onclick="openSetupModal(1)" class="btn-3d py-3.5 px-4 bg-emerald-700 hover:bg-emerald-600 border-b-4 border-emerald-900 text-white font-bold rounded-2xl flex items-center justify-center space-x-2 shadow">
+                    <i data-lucide="swords" class="w-5 h-5 text-amber-400"></i>
+                    <span>MAIN ARENA TUNGGAL</span>
+                </button>
+                <button onclick="openModal('bank-modal')" class="btn-3d py-3.5 px-4 bg-emerald-800 hover:bg-emerald-700 border-b-4 border-emerald-950 text-emerald-100 font-bold rounded-2xl flex items-center justify-center space-x-2 shadow">
+                    <i data-lucide="book-open" class="w-5 h-5 text-amber-400"></i>
+                    <span>BANK SOAL (300+)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- SETUP GAME MODAL -->
+        <div id="setup-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-emerald-900 border-2 border-emerald-500 rounded-3xl p-6 w-full max-w-md shadow-2xl text-left space-y-4">
+                <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
+                    <h3 id="setup-title" class="text-xl font-black text-amber-300">Pengaturan Pertandingan</h3>
+                    <button onclick="closeModal('setup-modal')" class="text-emerald-300 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+
+                <div id="arena-select-container" class="space-y-1">
+                    <label class="text-xs font-bold text-emerald-300">Pilih Arena Permainan:</label>
+                    <select id="setup-arena" class="w-full bg-emerald-950 border border-emerald-600 rounded-xl p-2.5 text-white font-semibold">
+                        <option value="1">Babak 1: Tarik Tambang (Fiqih)</option>
+                        <option value="2">Babak 2: Serbu Benteng (Al-Qur'an)</option>
+                        <option value="3">Babak 3: Balapan Santri (Hadis & Akhlak)</option>
+                        <option value="4">Babak 4: Harta Karun (Sejarah Islam)</option>
+                        <option value="5">Babak 5: Penalti Ilmu (Matematika Arab)</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-emerald-300">Tingkat Pendidikan / Kesulitan:</label>
+                    <select id="setup-level" class="w-full bg-emerald-950 border border-emerald-600 rounded-xl p-2.5 text-white font-semibold">
+                        <option value="sd13">SD Kelas 1-3 (Tingkat Dasar)</option>
+                        <option value="sd46">SD Kelas 4-6 (Tingkat Menengah)</option>
+                        <option value="smp">SMP (Tingkat Lanjut)</option>
+                        <option value="sma">SMA (Tingkat Kompleks)</option>
+                    </select>
+                </div>
+
+                <div id="category-select-container" class="space-y-1">
+                    <label class="text-xs font-bold text-emerald-300">Kategori Soal:</label>
+                    <select id="setup-category" class="w-full bg-emerald-950 border border-emerald-600 rounded-xl p-2.5 text-white font-semibold">
+                        <option value="all">Sesuai Babak (Fokus Topik)</option>
+                        <option value="Fiqih">Fiqih</option>
+                        <option value="Al-Qur'an">Al-Qur'an</option>
+                        <option value="Hadis">Hadis & Akhlak</option>
+                        <option value="Sejarah Islam">Sejarah Islam</option>
+                        <option value="Matematika">Matematika</option>
+                    </select>
+                </div>
+
+                <div id="rounds-select-container" class="space-y-1">
+                    <label class="text-xs font-bold text-emerald-300">Sistem Penentu Pemenang:</label>
+                    <div class="p-2.5 bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold text-amber-300">
+                        ⚡ Adu Kecepatan & Ketepatan (Siapa Cepat & Benar = Menang)
+                    </div>
+                </div>
+
+                <button onclick="confirmStartGame()" class="w-full btn-3d py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 text-emerald-950 font-black rounded-xl shadow-lg mt-2">
+                    MULAI PERTANDINGAN
+                </button>
+            </div>
+        </div>
+
+        <!-- ARENA GAME SCREEN -->
+        <section id="game-arena" class="screen-section w-full max-w-6xl flex-col items-center justify-between flex-1 my-2 z-10 space-y-2">
+            
+            <!-- TOP STATS BAR -->
+            <div class="w-full bg-emerald-950/90 border border-emerald-600/50 rounded-2xl p-2 flex justify-between items-center shadow-lg">
+                <!-- GREEN TEAM -->
+                <div class="flex items-center space-x-2 px-3 py-1 bg-emerald-800/80 rounded-xl border border-emerald-500">
+                    <div class="w-4 h-4 rounded-full bg-emerald-400"></div>
+                    <span class="font-extrabold text-sm text-emerald-200">TIM HIJAU:</span>
+                    <span id="green-score" class="font-black text-xl text-amber-300">0</span>
+                </div>
+
+                <!-- STAGE & TOPIC INFO -->
+                <div class="flex flex-col items-center">
+                    <span id="stage-indicator" class="text-[10px] font-bold uppercase text-amber-400 tracking-wider">BABAK 1: TARIK TAMBANG</span>
+                    <div class="flex items-center space-x-1">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-400 animate-bounce"></i>
+                        <span id="topic-indicator" class="font-black text-xs text-emerald-200 uppercase">TOPIK: FIQIH</span>
+                    </div>
+                </div>
+
+                <!-- BLUE TEAM -->
+                <div class="flex items-center space-x-2 px-3 py-1 bg-sky-900/80 rounded-xl border border-sky-500">
+                    <span id="blue-score" class="font-black text-xl text-amber-300">0</span>
+                    <span class="font-extrabold text-sm text-sky-200">: TIM BIRU</span>
+                    <div class="w-4 h-4 rounded-full bg-sky-400"></div>
+                </div>
+            </div>
+
+            <!-- DUAL QUESTION & CONTROLS GRID (ADAPTIVE LANDSCAPE / PORTRAIT) -->
+            <div class="grid grid-cols-1 landscape:grid-cols-12 gap-2 sm:gap-3 w-full flex-1 items-stretch">
+                
+                <!-- GREEN TEAM BOARD (LEFT SIDE IN LANDSCAPE) -->
+                <div class="landscape:col-span-4 bg-emerald-900/80 border-2 border-emerald-500/60 rounded-2xl p-2 sm:p-3 flex flex-col justify-between space-y-2 shadow-lg h-full">
+                    <div class="flex justify-between items-center border-b border-emerald-700/50 pb-1">
+                        <span class="text-xs font-black text-emerald-300 uppercase flex items-center gap-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> TIM HIJAU
+                        </span>
+                        <span id="green-q-count" class="text-[10px] font-bold bg-emerald-950 px-2 py-0.5 rounded-full text-emerald-300">Soal 1/10</span>
+                    </div>
+                    <p id="green-q-text" class="text-xs sm:text-sm font-bold text-white min-h-[44px] flex items-center justify-center text-center">
+                        Memuat Pertanyaan...
+                    </p>
+                    <div id="green-answers" class="grid grid-cols-2 gap-2">
+                        <!-- 4 Options Button -->
+                    </div>
+                </div>
+
+                <!-- VISUAL ARENA BOX (CENTER IN LANDSCAPE) -->
+                <div id="arena-visual-box" class="landscape:col-span-4 h-32 sm:h-auto min-h-[120px] bg-emerald-950/60 border-2 border-emerald-500/40 rounded-2xl relative overflow-hidden flex items-center justify-center p-2 shadow-inner order-first landscape:order-none">
+                    <!-- Dynamic SVG/Canvas Animation inserted by JS -->
+                    <div id="arena-stage" class="w-full h-full flex items-center justify-center"></div>
+                </div>
+
+                <!-- BLUE TEAM BOARD (RIGHT SIDE IN LANDSCAPE) -->
+                <div class="landscape:col-span-4 bg-sky-950/80 border-2 border-sky-500/60 rounded-2xl p-2 sm:p-3 flex flex-col justify-between space-y-2 shadow-lg h-full">
+                    <div class="flex justify-between items-center border-b border-sky-800/50 pb-1">
+                        <span class="text-xs font-black text-sky-300 uppercase flex items-center gap-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span> TIM BIRU
+                        </span>
+                        <span id="blue-q-count" class="text-[10px] font-bold bg-sky-950 px-2 py-0.5 rounded-full text-sky-300">Soal 1/10</span>
+                    </div>
+                    <p id="blue-q-text" class="text-xs sm:text-sm font-bold text-white min-h-[44px] flex items-center justify-center text-center">
+                        Memuat Pertanyaan...
+                    </p>
+                    <div id="blue-answers" class="grid grid-cols-2 gap-2">
+                        <!-- 4 Options Button -->
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- INTERMISSION SCREEN (TRANSISI BABAK TURNAMEN) -->
+        <section id="intermission-screen" class="screen-section w-full max-w-2xl flex-col items-center justify-center my-auto p-6 bg-emerald-950/90 border-2 border-amber-400/80 rounded-3xl text-center space-y-6 shadow-2xl z-20">
+            <h2 class="text-2xl sm:text-3xl font-black text-amber-300 tracking-wide uppercase">HASIL BABAK <span id="inter-round-num">1</span></h2>
+            <p id="intermission-sub" class="text-emerald-200 text-sm font-semibold">Skor Kemenangan Babak Saat Ini (Sistem Menang 3 Babak):</p>
+
+            <div class="grid grid-cols-2 gap-4 w-full max-w-md mx-auto">
+                <div class="bg-emerald-900/90 border-2 border-emerald-400 rounded-2xl p-4 flex flex-col items-center shadow">
+                    <span class="text-xs font-bold text-emerald-300">TIM HIJAU</span>
+                    <span id="inter-green-score" class="text-4xl font-black text-amber-300 my-1">0</span>
+                    <span class="text-[10px] text-emerald-400 font-bold">KEMENANGAN BABAK</span>
+                </div>
+                <div class="bg-sky-950/90 border-2 border-sky-400 rounded-2xl p-4 flex flex-col items-center shadow">
+                    <span class="text-xs font-bold text-sky-300">TIM BIRU</span>
+                    <span id="inter-blue-score" class="text-4xl font-black text-amber-300 my-1">0</span>
+                    <span class="text-[10px] text-sky-400 font-bold">KEMENANGAN BABAK</span>
+                </div>
+            </div>
+
+            <!-- REVIEW & PEMBAHASAN SOAL BABAK -->
+            <div class="w-full max-w-md bg-emerald-900/80 border border-emerald-600 rounded-2xl p-3 text-left space-y-2 max-h-36 overflow-y-auto">
+                <span class="text-xs font-black text-amber-300 uppercase flex items-center gap-1">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> Ringkasan Pembahasan Soal Babak Ini
+                </span>
+                <div id="inter-review-list" class="space-y-1.5 text-xs text-emerald-100">
+                    <!-- Dynamic review questions inserted by JS -->
+                </div>
+            </div>
+
+            <div class="bg-emerald-900 border border-emerald-600 rounded-2xl p-3 w-full max-w-md text-xs font-bold text-amber-200">
+                Lanjut Ke Babak Berikutnya: <span id="next-arena-title" class="text-white font-black uppercase">Arena 2: Serbu Benteng</span>
+            </div>
+
+            <button onclick="startNextTournamentRound()" class="btn-3d w-full max-w-md py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-emerald-950 font-black rounded-2xl text-lg shadow-xl">
+                LANJUT BABAK BERIKUTNYA &rarr;
+            </button>
+        </section>
+
+        <!-- MATCH RESULT SCREEN -->
+        <section id="result-screen" class="screen-section w-full max-w-3xl flex-col items-center justify-center my-auto p-6 bg-emerald-950/95 border-2 border-amber-400 rounded-3xl text-center space-y-6 shadow-2xl z-20">
+            <div>
+                <div class="w-20 h-20 bg-amber-400 rounded-full mx-auto flex items-center justify-center shadow-xl border-4 border-amber-200 animate-bounce">
+                    <i data-lucide="crown" class="w-12 h-12 text-emerald-950"></i>
+                </div>
+                <h2 id="winner-title" class="text-3xl sm:text-4xl font-black text-amber-300 mt-2 text-stroke-gold uppercase">TIM HIJAU MENANG!</h2>
+                <p id="winner-sub" class="text-emerald-200 font-semibold text-sm">Selamat kepada Pemenang Pertandingan!</p>
+            </div>
+
+            <!-- SCORE BOARD SUMMARY -->
+            <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+                <div class="bg-emerald-900/80 border border-emerald-500 rounded-2xl p-3 text-center">
+                    <span class="text-xs font-bold text-emerald-300">TIM HIJAU</span>
+                    <div id="res-green-score" class="text-3xl font-black text-amber-300 my-1">0</div>
+                    <span id="res-green-label" class="text-[10px] text-emerald-200">Menang Babak</span>
+                </div>
+                <div class="bg-sky-950/80 border border-sky-500 rounded-2xl p-3 text-center">
+                    <span class="text-xs font-bold text-sky-300">TIM BIRU</span>
+                    <div id="res-blue-score" class="text-3xl font-black text-amber-300 my-1">0</div>
+                    <span id="res-blue-label" class="text-[10px] text-sky-200">Menang Babak</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 justify-center w-full max-w-md">
+                <button onclick="goToMenu()" class="btn-3d flex-1 py-3 px-4 bg-emerald-700 hover:bg-emerald-600 border-b-4 border-emerald-900 text-white font-bold rounded-xl text-sm">
+                    MENU UTAMA
+                </button>
+                <button onclick="replayGame()" class="btn-3d flex-1 py-3 px-4 bg-amber-400 hover:bg-amber-300 border-b-4 border-amber-700 text-emerald-950 font-black rounded-xl text-sm">
+                    MAIN LAGI
+                </button>
+            </div>
+        </section>
+
+        <!-- FOOTER BAR -->
+        <footer class="w-full text-center text-[11px] text-emerald-400/80 py-1 font-semibold z-10">
+            ARENA JUARA MUSLIM &copy; 2026 - Educational Game Platform
+        </footer>
+
+    </div>
+
+    <!-- MODAL GUIDE -->
+    <div id="guide-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-emerald-900 border-2 border-emerald-500 rounded-3xl p-6 w-full max-w-lg shadow-2xl text-left space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
+                <h3 class="text-xl font-black text-amber-300 flex items-center gap-2">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i> Panduan Permainan
+                </h3>
+                <button onclick="closeModal('guide-modal')" class="text-emerald-300 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div class="space-y-3 text-xs sm:text-sm text-emerald-100 leading-relaxed">
+                <p><strong>ARENA JUARA MUSLIM</strong> adalah game edukasi Islami kompetisi dua kelompok pada satu layar perangkat (Multiplayer Multitouch).</p>
+                <h4 class="font-bold text-amber-300">Aturan Bermain:</h4>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>Dua tim (Hijau & Biru) berlomba menjawab soal masing-masing secara bersamaan.</li>
+                    <li>Jawaban benar akan menambah poin dan menggerakkan mekanisme visual arena.</li>
+                    <li>Setiap tim memiliki layar antrean soal mandiri.</li>
+                    <li>Pada <strong>Mode Turnamen</strong>, pemenang ditentukan dari skor kemenangan 5 babak (Best-of-5). Siapa yang memenangkan 3 babak terlebih dahulu akan menjadi Juara Umum!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BANK SOAL -->
+    <div id="bank-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-emerald-900 border-2 border-emerald-500 rounded-3xl p-6 w-full max-w-2xl shadow-2xl text-left space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
+                <h3 class="text-xl font-black text-amber-300 flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-5 h-5"></i> Bank Soal Edukasi (300+)
+                </h3>
+                <button onclick="closeModal('bank-modal')" class="text-emerald-300 hover:text-white"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <div id="bank-content-list" class="space-y-2 text-xs">
+                <!-- Question sample items injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT GAME ENGINE -->
+    <script>
+        // GLOBAL GAME STATE
+        const gameState = {
+            isTournament: false,
+            tournamentRound: 1, // 1 to 5
+            greenWins: 0,
+            blueWins: 0,
+            currentArena: 1,
+            selectedLevel: 'sd13',
+            selectedCategory: 'all',
+            audioEnabled: true,
+            
+            // Current Arena State
+            greenScore: 0,
+            blueScore: 0,
+            greenQIndex: 0,
+            blueQIndex: 0,
+            greenQuestions: [],
+            blueQuestions: [],
+            arenaProgress: 50, // 0 to 100 for visual rope/fort/race
+            roundReviewLog: []
+        };
+
+        // ARABIC NUMERAL HELPER FOR MATH QUESTIONS
+        function toArabicNumerals(numStr) {
+            const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            return String(numStr).replace(/[0-9]/g, (w) => arabicDigits[+w]);
+        }
+
+        // -------------------------------------------------------------
+        // AUDIO SYNTHESIZER (WEB AUDIO API)
+        // -------------------------------------------------------------
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!gameState.audioEnabled) return;
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(783.99, now + 0.16);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(160, now + 0.12);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.warn('Audio playback error:', e);
+            }
+        }
+
+        function toggleAudio() {
+            gameState.audioEnabled = !gameState.audioEnabled;
+            const btn = document.getElementById('audio-toggle-btn');
+            if (btn) {
+                btn.innerHTML = gameState.audioEnabled
+                    ? `<i data-lucide="volume-2" class="w-5 h-5"></i>`
+                    : `<i data-lucide="volume-x" class="w-5 h-5"></i>`;
+                lucide.createIcons();
+            }
+            playSound('click');
+        }
+
+        async function toggleFullScreen() {
+            playSound('click');
+            const btn = document.getElementById('fullscreen-btn');
+            try {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                    const docEl = document.documentElement;
+                    let fullScreenPromise = null;
+
+                    if (docEl.requestFullscreen) {
+                        fullScreenPromise = docEl.requestFullscreen();
+                    } else if (docEl.webkitRequestFullscreen) {
+                        fullScreenPromise = docEl.webkitRequestFullscreen();
+                    } else if (docEl.msRequestFullscreen) {
+                        fullScreenPromise = docEl.msRequestFullscreen();
+                    }
+
+                    if (fullScreenPromise && fullScreenPromise.catch) {
+                        await fullScreenPromise.catch(err => {
+                            console.warn("Fullscreen dibatasi oleh browser/iframe permissions policy:", err);
+                        });
+                    }
+
+                    if (document.fullscreenElement || document.webkitFullscreenElement) {
+                        if (btn) btn.innerHTML = `<i data-lucide="minimize" class="w-5 h-5"></i>`;
+                    }
+                } else {
+                    if (document.exitFullscreen) await document.exitFullscreen().catch(()=>{});
+                    else if (document.webkitExitFullscreen) await document.webkitExitFullscreen().catch(()=>{});
+                    else if (document.msExitFullscreen) await document.msExitFullscreen().catch(()=>{});
+                    
+                    if (btn) btn.innerHTML = `<i data-lucide="maximize" class="w-5 h-5"></i>`;
+                }
+            } catch (error) {
+                console.warn("Fullscreen tidak diizinkan di lingkungan iframe ini.", error);
+            }
+            lucide.createIcons();
+        }
+
+        // -------------------------------------------------------------
+        // NAVIGATION & MODALS
+        // -------------------------------------------------------------
+        function openModal(modalId) {
+            playSound('click');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                if (modalId === 'bank-modal') populateBankModal();
+            }
+        }
+
+        function closeModal(modalId) {
+            playSound('click');
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen-section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(screenId);
+            if (target) target.classList.add('active');
+            lucide.createIcons();
+        }
+
+        function goToMenu() {
+            playSound('click');
+            showScreen('main-menu');
+        }
+
+        function openTournamentSetup() {
+            playSound('click');
+            gameState.isTournament = true;
+            document.getElementById('setup-title').innerText = 'Pengaturan Turnamen 5 Babak';
+            document.getElementById('arena-select-container').classList.add('hidden');
+            document.getElementById('category-select-container').classList.add('hidden');
+            openModal('setup-modal');
+        }
+
+        function openSetupModal(arenaNum) {
+            playSound('click');
+            gameState.isTournament = false;
+            gameState.currentArena = arenaNum || 1;
+            document.getElementById('setup-title').innerText = 'Pengaturan Arena Tunggal';
+            document.getElementById('arena-select-container').classList.remove('hidden');
+            document.getElementById('category-select-container').classList.remove('hidden');
+            openModal('setup-modal');
+        }
+
+        function confirmStartGame() {
+            playSound('click');
+            closeModal('setup-modal');
+
+            gameState.selectedLevel = document.getElementById('setup-level').value;
+
+            if (gameState.isTournament) {
+                gameState.tournamentRound = 1;
+                gameState.greenWins = 0;
+                gameState.blueWins = 0;
+                gameState.currentArena = 1;
+            } else {
+                gameState.currentArena = parseInt(document.getElementById('setup-arena').value);
+                gameState.selectedCategory = document.getElementById('setup-category').value;
+            }
+
+            startMatch();
+        }
+
+        // -------------------------------------------------------------
+        // QUESTION BANK DATA & GENERATOR
+        // -------------------------------------------------------------
+        const rawQuestionBank = [
+            // Fiqih
+            { q: "Berapakah jumlah Rukun Islam?", options: ["5", "6", "4", "7"], answer: 0, exp: "Rukun Islam ada 5: Syahadat, Salat, Zakat, Puasa, Haji.", category: "Fiqih", level: "sd13" },
+            { q: "Salat Wajib yang dikerjakan pada sore hari adalah?", options: ["Asar", "Subuh", "Isya", "Dzuhur"], answer: 0, exp: "Salat Asar dilaksanakan pada sore hari.", category: "Fiqih", level: "sd13" },
+            { q: "Bersuci dari hadas kecil menggunakan air dinamakan?", options: ["Wudhu", "Tayamum", "Mandi", "Istinja"], answer: 0, exp: "Wudhu adalah cara bersuci dari hadas kecil menggunakan air bersih.", category: "Fiqih", level: "sd13" },
+            { q: "Rukun Islam yang ketiga adalah?", options: ["Zakat", "Puasa", "Salat", "Haji"], answer: 0, exp: "Urutan rukun Islam: 1. Syahadat, 2. Salat, 3. Zakat, 4. Puasa, 5. Haji.", category: "Fiqih", level: "sd46" },
+            { q: "Menghadap manakah arah kiblat saat salat?", options: ["Ka'bah", "Masjid Nabawi", "Baitul Maqdis", "Jabal Rahmah"], answer: 0, exp: "Kiblat umat Islam saat salat adalah Ka'bah di Makkah.", category: "Fiqih", level: "sd13" },
+
+            // Al-Qur'an
+            { q: "Surah pertama dalam urutan Al-Qur'an adalah?", options: ["Al-Fatihah", "Al-Baqarah", "An-Nas", "Al-Ikhlas"], answer: 0, exp: "Surah Al-Fatihah adalah surah pembuka Al-Qur'an.", category: "Al-Qur'an", level: "sd13" },
+            { q: "Surah Al-Ikhlas menceritakan tentang?", options: ["Tauhid (Keusahaan Allah)", "Kisah Para Nabi", "Hari Kiamat", "Zakat"], answer: 0, exp: "Surah Al-Ikhlas menegaskan keesaan Allah SWT.", category: "Al-Qur'an", level: "sd13" },
+            { q: "Berapa jumlah Juz dalam Al-Qur'an?", options: ["30 Juz", "20 Juz", "40 Juz", "114 Juz"], answer: 0, exp: "Al-Qur'an terdiri dari 30 Juz dan 114 Surah.", category: "Al-Qur'an", level: "sd13" },
+            { q: "Surah yang dinamakan Ummul Qur'an adalah?", options: ["Al-Fatihah", "Yasin", "Al-Baqarah", "Al-Ayat"], answer: 0, exp: "Al-Fatihah disebut Induk Al-Qur'an (Ummul Qur'an).", category: "Al-Qur'an", level: "sd46" },
+
+            // Hadis & Akhlak
+            { q: "Adab yang baik sebelum makan adalah membaca?", options: ["Basmalah / Doa Makan", "Hamdalah", "Takbir", "Istighfar"], answer: 0, exp: "Membaca Bismillah dan berdoa adalah sunnah sebelum makan.", category: "Hadis", level: "sd13" },
+            { q: "Kebersihan adalah sebagian dari?", options: ["Iman", "Islam", "Ihsan", "Taqwa"], answer: 0, exp: "Hadis meriwayatkan bahwa kebersihan adalah sebagian dari iman.", category: "Hadis", level: "sd13" },
+            { q: "Sikap jujur akan membimbing manusia menuju?", options: ["Kebaikan", "Kejahatan", "Keraguan", "Kesombongan"], answer: 0, exp: "Nabi SAW bersabda: Kejujuran membimbing menuju kebaikan.", category: "Hadis", level: "sd13" },
+
+            // Sejarah Islam
+            { q: "Nabi pertama yang diciptakan Allah SWT adalah?", options: ["Nabi Adam AS", "Nabi Nuh AS", "Nabi Ibrahim AS", "Nabi Muhammad SAW"], answer: 0, exp: "Nabi Adam AS adalah manusia dan nabi pertama.", category: "Sejarah Islam", level: "sd13" },
+            { q: "Nabi yang diberi mukjizat dapat membelah lautan adalah?", options: ["Nabi Musa AS", "Nabi Isa AS", "Nabi Sulaiman AS", "Nabi Yusuf AS"], answer: 0, exp: "Nabi Musa AS membelah Laut Merah dengan tongkatnya atas izin Allah.", category: "Sejarah Islam", level: "sd13" },
+            { q: "Kota tempat kelahiran Nabi Muhammad SAW adalah?", options: ["Makkah", "Madinah", "Yerusalem", "Kairo"], answer: 0, exp: "Nabi Muhammad SAW lahir di kota Makkah Al-Mukarramah.", category: "Sejarah Islam", level: "sd13" },
+
+            // Matematika Arab
+            { q: "Berapakah hasil dari ٥ + ٣ ?", options: ["٨", "٧", "٩", "٦"], answer: 0, exp: "5 + 3 = 8 (dalam angka Arab: ٨).", category: "Matematika", level: "sd13" },
+            { q: "Berapakah hasil dari ١٠ - ٤ ?", options: ["٦", "٥", "٧", "٨"], answer: 0, exp: "10 - 4 = 6 (dalam angka Arab: ٦).", category: "Matematika", level: "sd13" },
+            { q: "Berapakah hasil dari ٤ × ٣ ?", options: ["١٢", "١٠", "١٤", "١٦"], answer: 0, exp: "4 x 3 = 12 (dalam angka Arab: ١٢).", category: "Matematika", level: "sd13" },
+            { q: "Berapakah hasil dari ١٥ ÷ ٥ ?", options: ["٣", "٤", "٥", "٢"], answer: 0, exp: "15 / 5 = 3 (dalam angka Arab: ٣).", category: "Matematika", level: "sd13" }
+        ];
+
+        // Generate full 10-question sets per category
+        function getQuestionSetForArena(arenaNum) {
+            let catName = "Fiqih";
+            if (arenaNum === 2) catName = "Al-Qur'an";
+            else if (arenaNum === 3) catName = "Hadis";
+            else if (arenaNum === 4) catName = "Sejarah Islam";
+            else if (arenaNum === 5) catName = "Matematika";
+
+            let pool = rawQuestionBank.filter(q => q.category === catName || (catName === "Hadis" && q.category === "Akhlak"));
+
+            // If pool has less than 10, generate procedurally valid questions
+            while (pool.length < 10) {
+                const idx = pool.length + 1;
+                if (catName === "Matematika") {
+                    const a = idx * 2;
+                    const b = idx;
+                    const res = a + b;
+                    pool.push({
+                        q: `Berapakah hasil dari ${toArabicNumerals(a)} + ${toArabicNumerals(b)} ?`,
+                        options: [toArabicNumerals(res), toArabicNumerals(res + 1), toArabicNumerals(res - 1), toArabicNumerals(res + 2)],
+                        answer: 0,
+                        exp: `${a} + ${b} = ${res}`,
+                        category: "Matematika",
+                        level: gameState.selectedLevel
+                    });
+                } else {
+                    pool.push({
+                        q: `[${catName}] Pertanyaan Edukasi Islami #${idx}: Manakah di bawah ini sikap terpuji?`,
+                        options: ["Menolong sesama & Jujur", "Bercela", "Sombong", "Iri Hati"],
+                        answer: 0,
+                        exp: "Sikap terpuji mencakup menolong sesama, berbuat baik, dan jujur.",
+                        category: catName,
+                        level: gameState.selectedLevel
+                    });
+                }
+            }
+
+            return pool.slice(0, 10);
+        }
+
+        // Shuffle array helper
+        function shuffle(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        // -------------------------------------------------------------
+        // MATCH CONTROL ENGINE
+        // -------------------------------------------------------------
+        function startMatch() {
+            gameState.greenScore = 0;
+            gameState.blueScore = 0;
+            gameState.greenQIndex = 0;
+            gameState.blueQIndex = 0;
+            gameState.arenaProgress = 50;
+            gameState.roundReviewLog = [];
+
+            const baseQuestions = getQuestionSetForArena(gameState.currentArena);
+            gameState.greenQuestions = shuffle(baseQuestions);
+            gameState.blueQuestions = shuffle(baseQuestions);
+
+            // Update UI Header Indicators
+            const arenaTitles = [
+                "BABAK 1: TARIK TAMBANG",
+                "BABAK 2: SERBU BENTENG",
+                "BABAK 3: BALAPAN SANTRI",
+                "BABAK 4: HARTA KARUN",
+                "BABAK 5: PENALTI ILMU"
+            ];
+            const topicTitles = ["FIQIH", "AL-QUR'AN", "HADIS & AKHLAK", "SEJARAH ISLAM", "MATEMATIKA ARAB"];
+
+            document.getElementById('stage-indicator').innerText = arenaTitles[gameState.currentArena - 1];
+            document.getElementById('topic-indicator').innerText = `TOPIK: ${topicTitles[gameState.currentArena - 1]}`;
+            document.getElementById('green-score').innerText = '0';
+            document.getElementById('blue-score').innerText = '0';
+
+            showScreen('game-arena');
+            renderTeamQuestion('green');
+            renderTeamQuestion('blue');
+            renderArenaVisuals();
+        }
+
+        function renderTeamQuestion(team) {
+            const isGreen = team === 'green';
+            const idx = isGreen ? gameState.greenQIndex : gameState.blueQIndex;
+            const qList = isGreen ? gameState.greenQuestions : gameState.blueQuestions;
+
+            const countEl = document.getElementById(isGreen ? 'green-q-count' : 'blue-q-count');
+            const textEl = document.getElementById(isGreen ? 'green-q-text' : 'blue-q-text');
+            const answersEl = document.getElementById(isGreen ? 'green-answers' : 'blue-answers');
+
+            if (idx >= qList.length) {
+                textEl.innerText = 'Selesai! Menunggu lawan...';
+                answersEl.innerHTML = `<div class="col-span-2 text-center text-amber-300 font-bold py-4">Semua 10 Soal Telah Dijawab!</div>`;
+                countEl.innerText = `10/10`;
+                checkRoundOver();
+                return;
+            }
+
+            const currentQ = qList[idx];
+            countEl.innerText = `Soal ${idx + 1}/10`;
+            textEl.innerText = currentQ.q;
+
+            // Prepare options with shuffle mapping
+            let optionsWithIndex = currentQ.options.map((opt, i) => ({ opt, isCorrect: i === currentQ.answer }));
+            optionsWithIndex = shuffle(optionsWithIndex);
+
+            answersEl.innerHTML = '';
+            optionsWithIndex.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `btn-3d touch-btn p-2.5 sm:p-3 text-xs sm:text-sm font-bold rounded-xl border text-white shadow flex items-center justify-center text-center ${
+                    isGreen 
+                        ? 'bg-emerald-800 hover:bg-emerald-700 border-emerald-500' 
+                        : 'bg-sky-900 hover:bg-sky-800 border-sky-500'
+                }`;
+                btn.innerText = item.opt;
+                btn.onclick = () => handleAnswer(team, item.isCorrect, currentQ);
+                answersEl.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(team, isCorrect, questionObj) {
+            if (isCorrect) {
+                playSound('correct');
+                if (team === 'green') {
+                    gameState.greenScore += 10;
+                    gameState.arenaProgress = Math.min(100, gameState.arenaProgress + 8);
+                } else {
+                    gameState.blueScore += 10;
+                    gameState.arenaProgress = Math.max(0, gameState.arenaProgress - 8);
+                }
+            } else {
+                playSound('wrong');
+            }
+
+            // Log review item
+            if (!gameState.roundReviewLog.some(r => r.q === questionObj.q)) {
+                gameState.roundReviewLog.push(questionObj);
+            }
+
+            // Advance Index
+            if (team === 'green') gameState.greenQIndex++;
+            else gameState.blueQIndex++;
+
+            document.getElementById('green-score').innerText = gameState.greenScore;
+            document.getElementById('blue-score').innerText = gameState.blueScore;
+
+            renderTeamQuestion(team);
+            renderArenaVisuals();
+            checkRoundOver();
+        }
+
+        function renderArenaVisuals() {
+            const container = document.getElementById('arena-stage');
+            const prog = gameState.arenaProgress; // 0 (Blue win) to 100 (Green win)
+
+            if (gameState.currentArena === 1) {
+                // Tug of War
+                container.innerHTML = `
+                    <div class="w-full flex flex-col items-center justify-center space-y-2">
+                        <div class="text-xs font-black text-amber-300">TARIK TAMBANG</div>
+                        <div class="relative w-full h-8 bg-emerald-900 rounded-full border border-emerald-600 overflow-hidden flex items-center">
+                            <div class="absolute left-0 top-0 bottom-0 bg-emerald-500" style="width: ${prog}%"></div>
+                            <div class="absolute right-0 top-0 bottom-0 bg-sky-500" style="width: ${100 - prog}%"></div>
+                            <div class="absolute w-4 h-8 bg-amber-400 border border-white rounded transform -translate-x-1/2" style="left: ${prog}%"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (gameState.currentArena === 2) {
+                // Fortress Defense
+                container.innerHTML = `
+                    <div class="w-full flex justify-between items-center px-4">
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center font-black text-white">HIJAU</div>
+                            <span class="text-[10px] text-emerald-300 font-bold">Benteng ${prog}%</span>
+                        </div>
+                        <div class="text-center font-black text-amber-300">SERBU BENTENG</div>
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-sky-600 rounded-xl flex items-center justify-center font-black text-white">BIRU</div>
+                            <span class="text-[10px] text-sky-300 font-bold">Benteng ${100 - prog}%</span>
+                        </div>
+                    </div>
+                `;
+            } else if (gameState.currentArena === 3) {
+                // Santri Race
+                container.innerHTML = `
+                    <div class="w-full flex flex-col space-y-2">
+                        <div class="text-xs font-black text-amber-300 text-center">BALAPAN SANTRI</div>
+                        <div class="w-full bg-emerald-900 rounded-lg p-1 space-y-1">
+                            <div class="relative w-full h-4 bg-emerald-950 rounded">
+                                <div class="absolute top-0 bottom-0 w-3 bg-emerald-400 rounded" style="left: ${prog}%"></div>
+                            </div>
+                            <div class="relative w-full h-4 bg-sky-950 rounded">
+                                <div class="absolute top-0 bottom-0 w-3 bg-sky-400 rounded" style="left: ${100 - prog}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (gameState.currentArena === 4) {
+                // Treasure Island
+                container.innerHTML = `
+                    <div class="w-full flex justify-around items-center text-center">
+                        <div class="bg-emerald-900 px-3 py-1 rounded-xl border border-emerald-500">
+                            <i data-lucide="key" class="w-5 h-5 text-amber-400 mx-auto"></i>
+                            <span class="text-xs font-bold">${Math.floor(gameState.greenScore / 10)} Kunci</span>
+                        </div>
+                        <div class="font-black text-amber-300 text-xs">HARTA KARUN</div>
+                        <div class="bg-sky-900 px-3 py-1 rounded-xl border border-sky-500">
+                            <i data-lucide="key" class="w-5 h-5 text-amber-400 mx-auto"></i>
+                            <span class="text-xs font-bold">${Math.floor(gameState.blueScore / 10)} Kunci</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Penalty Shootout
+                container.innerHTML = `
+                    <div class="w-full flex justify-around items-center text-center">
+                        <div class="bg-emerald-900 px-3 py-1 rounded-xl border border-emerald-500">
+                            <span class="text-lg font-black text-emerald-300">${Math.floor(gameState.greenScore / 10)}</span>
+                            <span class="text-[10px] block font-bold">GOL HIJAU</span>
+                        </div>
+                        <div class="font-black text-amber-300 text-xs">PENALTI ILMU</div>
+                        <div class="bg-sky-900 px-3 py-1 rounded-xl border border-sky-500">
+                            <span class="text-lg font-black text-sky-300">${Math.floor(gameState.blueScore / 10)}</span>
+                            <span class="text-[10px] block font-bold">GOL BIRU</span>
+                        </div>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function checkRoundOver() {
+            const greenFinished = gameState.greenQIndex >= gameState.greenQuestions.length;
+            const blueFinished = gameState.blueQIndex >= gameState.blueQuestions.length;
+
+            if (greenFinished && blueFinished) {
+                let winner = 'draw';
+                if (gameState.greenScore > gameState.blueScore) winner = 'green';
+                else if (gameState.blueScore > gameState.greenScore) winner = 'blue';
+
+                if (gameState.isTournament) {
+                    if (winner === 'green') gameState.greenWins++;
+                    else if (winner === 'blue') gameState.blueWins++;
+
+                    // Check Best-of-5 Win condition (First to 3)
+                    if (gameState.greenWins >= 3 || gameState.blueWins >= 3 || gameState.tournamentRound >= 5) {
+                        showFinalTournamentResult();
+                    } else {
+                        showIntermission();
+                    }
+                } else {
+                    showSingleMatchResult(winner);
+                }
+            }
+        }
+
+        function showIntermission() {
+            document.getElementById('inter-round-num').innerText = gameState.tournamentRound;
+            document.getElementById('inter-green-score').innerText = gameState.greenWins;
+            document.getElementById('inter-blue-score').innerText = gameState.blueWins;
+
+            const reviewContainer = document.getElementById('inter-review-list');
+            reviewContainer.innerHTML = '';
+            gameState.roundReviewLog.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'border-b border-emerald-800/60 pb-1';
+                div.innerHTML = `<strong>${i + 1}. ${item.q}</strong><br><span class="text-amber-300">Jawaban Benar: ${item.options[item.answer]}</span><br><span class="text-emerald-300 italic">${item.exp}</span>`;
+                reviewContainer.appendChild(div);
+            });
+
+            const nextArenaTitles = [
+                "Arena 2: Serbu Benteng",
+                "Arena 3: Balapan Santri",
+                "Arena 4: Harta Karun",
+                "Arena 5: Penalti Ilmu (Babak Final)"
+            ];
+            document.getElementById('next-arena-title').innerText = nextArenaTitles[gameState.tournamentRound - 1] || "Babak Selesai";
+
+            showScreen('intermission-screen');
+        }
+
+        function startNextTournamentRound() {
+            gameState.tournamentRound++;
+            gameState.currentArena = gameState.tournamentRound;
+            startMatch();
+        }
+
+        function showSingleMatchResult(winner) {
+            const titleEl = document.getElementById('winner-title');
+            if (winner === 'green') {
+                titleEl.innerText = "TIM HIJAU MENANG!";
+            } else if (winner === 'blue') {
+                titleEl.innerText = "TIM BIRU MENANG!";
+            } else {
+                titleEl.innerText = "PERTANDINGAN SERI!";
+            }
+
+            document.getElementById('res-green-score').innerText = gameState.greenScore;
+            document.getElementById('res-blue-score').innerText = gameState.blueScore;
+            document.getElementById('res-green-label').innerText = "Poin Akhir";
+            document.getElementById('res-blue-label').innerText = "Poin Akhir";
+
+            showScreen('result-screen');
+            if (typeof confetti === 'function') confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
+
+        function showFinalTournamentResult() {
+            const titleEl = document.getElementById('winner-title');
+            if (gameState.greenWins > gameState.blueWins) {
+                titleEl.innerText = "TIM HIJAU JUARA UMUM!";
+            } else if (gameState.blueWins > gameState.greenWins) {
+                titleEl.innerText = "TIM BIRU JUARA UMUM!";
+            } else {
+                titleEl.innerText = "TURNAMEN SERI!";
+            }
+
+            document.getElementById('res-green-score').innerText = gameState.greenWins;
+            document.getElementById('res-blue-score').innerText = gameState.blueWins;
+            document.getElementById('res-green-label').innerText = "Kemenangan Babak";
+            document.getElementById('res-blue-label').innerText = "Kemenangan Babak";
+
+            showScreen('result-screen');
+            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 90, origin: { y: 0.5 } });
+        }
+
+        function replayGame() {
+            if (gameState.isTournament) {
+                gameState.tournamentRound = 1;
+                gameState.greenWins = 0;
+                gameState.blueWins = 0;
+                gameState.currentArena = 1;
+            }
+            startMatch();
+        }
+
+        function populateBankModal() {
+            const listContainer = document.getElementById('bank-content-list');
+            listContainer.innerHTML = '';
+            rawQuestionBank.forEach((q, idx) => {
+                const item = document.createElement('div');
+                item.className = 'bg-emerald-950 p-2.5 rounded-xl border border-emerald-700/60';
+                item.innerHTML = `<p class="font-bold text-amber-300">${idx + 1}. [${q.category}] ${q.q}</p>
+                                  <p class="text-emerald-200 mt-1">Jawaban: <strong>${q.options[q.answer]}</strong></p>
+                                  <p class="text-emerald-400 italic text-[11px]">${q.exp}</p>`;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // INITIALIZE ICONS ON PAGE LOAD
+        window.onload = function() {
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
